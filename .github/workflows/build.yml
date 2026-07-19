@@ -1,0 +1,224 @@
+name: ksu_integration
+
+on:
+  push:
+    branches: [main]
+
+env:
+  WORKSPACE: ${{ github.workspace }}
+  KERNEL: "${{ github.workspace }}/kernel"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: free_disk_space       
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
+    - name: cache_ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.ccache
+        key: ccache-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          ccache-${{ runner.os }}-
+    
+    - name: install_packages
+      run: |
+        sudo apt-get update && sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev libc6-dev-i386 libxml2-utils xsltproc unzip fontconfig ccache repo
+          
+    - name: clone_kernel_source
+      run: |
+        mkdir -p $KERNEL && cd $KERNEL
+
+        repo init --depth=1 -u https://android.googlesource.com/kernel/manifest -b common-android13-5.10
+
+        repo --trace sync -c -j$(nproc --all) --no-tags --fail-fast
+
+        cd ./common
+
+        git fetch --depth=1 https://android.googlesource.com/kernel/common refs/tags/android13-5.10-2024-11_r6
+
+        git checkout -b android13-5.10-2024-11_r6 FETCH_HEAD
+        
+    - name: ksu_setup
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+        
+    - name: susfs_setup
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        git clone -b gki-android13-5.10 --single-branch https://gitlab.com/simonpunk/susfs4ksu.git
+        
+        cd ./susfs4ksu
+        
+        cp ./kernel_patches/50_add_susfs_in_gki-android13-5.10.patch ../common/
+        
+        cp -r ./kernel_patches/fs/* ../common/fs/
+        cp -r ./kernel_patches/include/linux/* ../common/include/linux/
+
+        cd ../common
+        
+        patch -p1 < 50_add_susfs_in_gki-android13-5.10.patch
+
+    - name: bbg_setup
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
+        
+        sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' ./common/security/Kconfig
+
+        # check install
+        if grep -q "baseband_guard" ./common/security/Kconfig; then
+          echo "✓ baseband_guard found in common/security/Kconfig"
+        else
+          echo "x baseband_guard not found in common/security/Kconfig"
+          exit 1
+        fi
+     
+    - name: fix_wifi
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        rm -rf ./common/android/abi_gki_protected_exports_aarch64
+
+    - name: fix_flags
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        sed -i 's/vm_flags_clear(new_vma,VM_PAD_MASK);/new_vma->vm_flags \&= ~VM_PAD_MASK;/g' ./common/mm/mmap.c
+
+        echo 'CFLAGS_susfs.o += -Wno-unused-function -Wno-unused-variable' >> ./common/fs/Makefile
+        
+    - name: fix_export_symbols
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        printf 'EXPORT_SYMBOL(%s);\n' \
+          "susfs_is_current_ksu_domain" \
+          "susfs_is_current_zygote_domain" \
+          "susfs_is_current_init_domain" \
+          >> ./common/drivers/kernelsu/selinux/selinux.c
+        
+    - name: configure_fragment
+      run: |
+        printf "append_cmd POST_DEFCONFIG_CMDS 'if [ -f \"$WORKSPACE/config.fragment\" ]; then \${KERNEL_DIR}/scripts/kconfig/merge_config.sh -m -O \${OUT_DIR} \${OUT_DIR}/.config \"$WORKSPACE/config.fragment\"; fi && (cd \${KERNEL_DIR} && make O=\${OUT_DIR} olddefconfig)'\n" > $WORKSPACE/defconfig_wrapper.sh
+        
+        cat $WORKSPACE/defconfig_wrapper.sh
+
+    - name: set_kernel_version
+      if: false
+      working-directory: ${{ env.KERNEL }}/common
+      run: |
+        tac ./scripts/setlocalversion | awk '!seen && /^echo / {seen=1; next} 1' | tac > ./scripts/setlocalversion.tmp
+
+        mv ./scripts/setlocalversion.tmp ./scripts/setlocalversion
+
+        echo 'echo "-a13.gki[v0.1]-g16180339-[arrch64]"' >> ./scripts/setlocalversion
+
+        chmod +x ./scripts/setlocalversion
+
+    - name: commit_changes
+      working-directory: ${{ env.KERNEL }}/common
+      run: |
+        git config user.email "build@github.com"
+        git config user.name "GitHub Actions"
+        
+        git add -A
+
+        git commit -m "apply patches"
+        
+    - name: make_image
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        set -euo pipefail
+        
+        export LTO=thin
+
+        export SKIP_EXT_MODULES=1
+        export SKIP_CP_KERNEL_HDR=1
+        export SKIP_MRPROPER=1
+        
+        export GKI_DEFCONFIG_FRAGMENT="$WORKSPACE/defconfig_wrapper.sh"
+        export GKI_BUILD_CONFIG_FRAGMENT="$WORKSPACE/gki_build_overrides.fragment"
+        export BUILD_CONFIG=common/build.config.gki.aarch64
+
+        export CCACHE_DIR=~/.ccache
+        export CC="ccache clang"
+        export HOSTCC="ccache clang"
+        export HOSTCXX="ccache clang++"
+    
+        ccache -M 5G
+        
+        build/build.sh 2>&1 | tee build.log
+  
+    - name: check_config_after_build
+      working-directory: ${{ env.KERNEL }}
+      run: |
+        grep "BBG\|KSU\|KPM" ./out/android13-5.10/common/.config 2>/dev/null
+
+        cat ./out/android13-5.10/common/include/generated/utsrelease.h
+    
+    - name: make_anykernel3
+      working-directory: ${{ env.WORKSPACE }}
+      run: |
+        git clone https://github.com/osm0sis/AnyKernel3 anykernel3
+
+        # downgrade
+        cd ./anykernel3 && git checkout dca9dc370838d919d56c1f59ec78b27a14a72c68
+
+        cd ../
+
+        cp $KERNEL/out/android13-5.10/dist/Image ./anykernel3/
+
+        cp ./anykernel.sh ./anykernel3/anykernel.sh
+
+        cd anykernel3
+
+        zip -r9 ../resukisu-5.10.223-android13-2024-11-anykernel3.zip . -x "*.git*"
+        
+    - name: upload_anykernel3
+      uses: actions/upload-artifact@v4
+      with:
+        name: resukisu-5.10.223-android13
+        path: "${{ github.workspace }}/resukisu-5.10.223-android13-2024-11-anykernel3.zip"
+        compression-level: 0
+
+    - name: create_release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ github.workspace }}/resukisu-5.10.223-android13-2024-11-anykernel3.zip
+        tag_name: v${{ github.run_number }}
+        name: ReSukiSU Build ${{ github.run_number }}
+        body: |
+          ## ReSukiSU + SUSFS 2.2.0 + Baseband Guard
+      
+          - Kernel: 5.10.223 (android13-2024-11_r6)
+          - KernelSU: ReSukiSU (main)
+          - driver: 35018
+
+          - tested: a14 5g
+      
+          ## installation 
+          flash ak3 using horizon kernel flasher
+          
+          https://github.com/libxzr/HorizonKernelFlasher/releases
+          
+    
+
