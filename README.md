@@ -34,7 +34,7 @@
 1. Download the AnyKernel3 zip from the releases page
 2. Flash using [Horizon Kernel Flasher](https://github.com/libxzr/HorizonKernelFlasher/releases)
 3. Reboot
-4. Install the [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases)
+4. Install the [ReSukiSU Manager](https://resukisu.github.io/guide/install.html)
 
 > ⚠️ Make a backup of your boot partition before flashing!
 
