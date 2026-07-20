@@ -32,14 +32,6 @@ jobs:
         large-packages: true
         docker-images: true
         swap-storage: true
-
-    - name: cache_ccache
-      uses: actions/cache@v4
-      with:
-        path: ~/.ccache
-        key: ccache-${{ runner.os }}-${{ github.sha }}
-        restore-keys: |
-          ccache-${{ runner.os }}-
     
     - name: install_packages
       run: |
@@ -137,12 +129,21 @@ jobs:
     - name: commit_changes
       working-directory: ${{ env.KERNEL }}/common
       run: |
-        git config user.email "build@github.com"
-        git config user.name "GitHub Actions"
+        find . -name ".git" -type d | while read gitdir; do
         
-        git add -A
+          repo_dir=$(dirname "$gitdir")
 
-        git commit -m "apply patches"
+          cd "$repo_dir"
+
+          git config user.email "build@github.com"
+          git config user.name "GitHub Actions"
+        
+          git add -A
+        
+          git diff --cached --quiet || git commit -m "apply patches"
+        
+          cd "${{ env.KERNEL }}"
+        done
         
     - name: make_image
       working-directory: ${{ env.KERNEL }}
@@ -158,13 +159,6 @@ jobs:
         export GKI_DEFCONFIG_FRAGMENT="$WORKSPACE/defconfig_wrapper.sh"
         export GKI_BUILD_CONFIG_FRAGMENT="$WORKSPACE/gki_build_overrides.fragment"
         export BUILD_CONFIG=common/build.config.gki.aarch64
-
-        export CCACHE_DIR=~/.ccache
-        export CC="ccache clang"
-        export HOSTCC="ccache clang"
-        export HOSTCXX="ccache clang++"
-    
-        ccache -M 5G
         
         build/build.sh 2>&1 | tee build.log
   
