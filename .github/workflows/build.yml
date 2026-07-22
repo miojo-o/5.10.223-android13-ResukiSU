@@ -139,7 +139,7 @@ jobs:
 
           git add -A
 
-          git diff --cached --quiet || git commit -m "apply patches"
+          git diff --cached --quiet || git commit -m "apply patch"
         }
 
         commit_repo "$KERNEL/KernelSU"
