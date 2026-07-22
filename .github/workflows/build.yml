@@ -129,21 +129,20 @@ jobs:
     - name: commit_changes
       working-directory: ${{ env.KERNEL }}/common
       run: |
-        find . -name ".git" -type d | while read gitdir; do
-        
-          repo_dir=$(dirname "$gitdir")
-
-          cd "$repo_dir"
+        commit_repo() {
+          local dir=$1
+          cd "$dir"
 
           git config user.email "build@github.com"
           git config user.name "GitHub Actions"
-        
+
           git add -A
-        
+
           git diff --cached --quiet || git commit -m "apply patches"
-        
-          cd "${{ env.KERNEL }}"
-        done
+        }
+
+        commit_repo "./KernelSU"
+        commit_repo "./"
         
     - name: make_image
       working-directory: ${{ env.KERNEL }}
