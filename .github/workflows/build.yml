@@ -131,6 +131,7 @@ jobs:
       run: |
         commit_repo() {
           local dir=$1
+          
           cd "$dir"
 
           git config user.email "build@github.com"
@@ -141,8 +142,8 @@ jobs:
           git diff --cached --quiet || git commit -m "apply patches"
         }
 
-        commit_repo "KernelSU"
-        commit_repo "."
+        commit_repo "$KERNEL/KernelSU"
+        commit_repo "$KERNEL/common"
         
     - name: make_image
       working-directory: ${{ env.KERNEL }}
