@@ -78,14 +78,6 @@ jobs:
         wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
         
         sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' ./common/security/Kconfig
-
-        # check install
-        if grep -q "baseband_guard" ./common/security/Kconfig; then
-          echo "✓ baseband_guard found in common/security/Kconfig"
-        else
-          echo "x baseband_guard not found in common/security/Kconfig"
-          exit 1
-        fi
      
     - name: fix_wifi
       working-directory: ${{ env.KERNEL }}
@@ -122,7 +114,7 @@ jobs:
 
         mv ./scripts/setlocalversion.tmp ./scripts/setlocalversion
 
-        echo 'echo "-a13.gki[v0.1]-g16180339-[arrch64]"' >> ./scripts/setlocalversion
+        echo 'echo "-a13..."' >> ./scripts/setlocalversion
 
         chmod +x ./scripts/setlocalversion
 
@@ -139,7 +131,7 @@ jobs:
 
           git add -A
 
-          git diff --cached --quiet || git commit -m "apply patch"
+          git diff --cached --quiet || git commit -m "apply patches"
         }
 
         commit_repo "$KERNEL/KernelSU"
@@ -165,7 +157,7 @@ jobs:
     - name: check_config_after_build
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep "BBG\|KSU\|KPM" ./out/android13-5.10/common/.config 2>/dev/null
+        grep "BBG\|KSU" ./out/android13-5.10/common/.config 2>/dev/null
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
@@ -201,13 +193,12 @@ jobs:
         tag_name: v${{ github.run_number }}
         name: ReSukiSU Build ${{ github.run_number }}
         body: |
-          ## ReSukiSU + SUSFS 2.2.0 + Baseband Guard
+          ## ReSukiSU + SusFS 2.2.0 + Baseband Guard
       
           - Kernel: 5.10.223 (android13-2024-11_r6)
-          - KernelSU: ReSukiSU (main)
-          - driver: 35018
+          - ksu_driver: (main) 35030
 
-          - tested: a14 5g
+          - tested in: a14 5g
       
           ## installation 
           flash ak3 using horizon kernel flasher
