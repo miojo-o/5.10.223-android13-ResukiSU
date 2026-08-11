@@ -191,7 +191,7 @@ jobs:
 
         cd ../
 
-        cp "$KERNEL/out/android13-5.10/dist/Image ./anykernel3/"
+        cp "$KERNEL/out/android13-5.10/dist/Image" ./anykernel3/
 
         cp ./anykernel.sh ./anykernel3/anykernel.sh
 
