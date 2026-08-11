@@ -157,6 +157,10 @@ jobs:
           apply_line "$line"
         done < "$FRAGMENT"
 
+        # check configs
+        grep -i bbr arch/arm64/configs/gki_defconfig || echo "❌ NÃO ENCONTRADO!"
+        grep -r "DEFCONFIG" build.config* || echo "Nenhuma referência"
+
         # skip savedefconfig check
         sed -i 's/check_defconfig//' ./build.config.gki
 
