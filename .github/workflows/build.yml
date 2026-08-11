@@ -147,6 +147,14 @@ jobs:
           fi
 
           echo "apply: $key=$value"
+  
+          if grep -q "^$key=" "$DEFCONFIG"; then
+            sed -i "s|^$key=.*|$key=$value|g" "$DEFCONFIG"
+          elif grep -q "^# $key is not set" "$DEFCONFIG"; then
+            sed -i "s|^# $key is not set|$key=$value|g" "$DEFCONFIG"
+          else
+            echo "$key=$value" >> "$DEFCONFIG"
+          fi
         }
 
         while IFS= read -r line || [ -n "$line" ]; do
@@ -230,7 +238,7 @@ jobs:
       with:
         name: resukisu-5.10.223-android13
         path: ${{ github.workspace }}/resukisu-5.10.223-android13-2024-11-anykernel3.zip
-        compression-level: 0
+        compression-level: 9
 
     - name: create_release
       uses: softprops/action-gh-release@v2
