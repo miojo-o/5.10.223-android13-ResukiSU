@@ -131,25 +131,26 @@ jobs:
         FRAGMENT="$WORKSPACE/config.fragment"
 
         apply_line() {
-          local line=$1
-          line="$(echo $line | xargs)"   
+          local line="$1"
+          line="$(echo "$line" | xargs)"   
 
-          [[ -z $line || $line == \#* ]] && return
+          [[ -z "$line" || "$line" == \#* ]] && return
 
           local key value
 
-          if [[ $line == *"="* ]]; then
+          if [[ "$line" == *"="* ]]; then
             key="${line%%=*}"
             value="${line#*=}"
           else
-            key=$line
+            key="$line"
             value="y"
           fi
 
           echo "apply: $key=$value"
+        }
 
-        while IFS= read -r line || [ -n $line ]; do
-          apply_line $line
+        while IFS= read -r line || [ -n "$line" ]; do
+          apply_line "$line"
         done < $FRAGMENT
 
     - name: set_kernel_version
