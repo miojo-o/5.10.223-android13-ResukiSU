@@ -124,11 +124,33 @@ jobs:
           "susfs_is_current_init_domain" \
           >> ./common/drivers/kernelsu/selinux/selinux.c
         
-    - name: configure_fragment
+    - name: apply_config.fragment
+      working-directory: ${{ env.KERNEL }}/common
       run: |
-        printf "append_cmd POST_DEFCONFIG_CMDS 'if [ -f \"$WORKSPACE/config.fragment\" ]; then \${KERNEL_DIR}/scripts/kconfig/merge_config.sh -m -O \${OUT_DIR} \${OUT_DIR}/.config \"$WORKSPACE/config.fragment\"; fi && (cd \${KERNEL_DIR} && make O=\${OUT_DIR} olddefconfig)'\n" > $WORKSPACE/defconfig_wrapper.sh
-        
-        cat $WORKSPACE/defconfig_wrapper.sh
+        DEFCONFIG="arch/arm64/configs/gki_defconfig"
+        FRAGMENT="$WORKSPACE/config.fragment"
+
+        apply_line() {
+          local line=$1
+          line="$(echo $line | xargs)"   
+
+          [[ -z $line || $line == \#* ]] && return
+
+          local key value
+
+          if [[ $line == *"="* ]]; then
+            key="${line%%=*}"
+            value="${line#*=}"
+          else
+            key=$line
+            value="y"
+          fi
+
+          echo "apply: $key=$value"
+
+        while IFS= read -r line || [ -n $line ]; do
+          apply_line $line
+        done < $FRAGMENT
 
     - name: set_kernel_version
       if: false
@@ -172,16 +194,15 @@ jobs:
         export SKIP_CP_KERNEL_HDR=1
         export SKIP_MRPROPER=1
         
-        export GKI_DEFCONFIG_FRAGMENT="$WORKSPACE/defconfig_wrapper.sh"
         export GKI_BUILD_CONFIG_FRAGMENT="$WORKSPACE/gki_build_overrides.fragment"
         export BUILD_CONFIG=common/build.config.gki.aarch64
         
         build/build.sh 2>&1 | tee build.log
   
-    - name: check_configs
+    - name: check_config_after_build
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep -E "BBG|KSU|BBG|BBR3" ./out/android13-5.10/common/.config
+        grep -E "BBG|KSU|BBR3" ./out/android13-5.10/common/.config
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
