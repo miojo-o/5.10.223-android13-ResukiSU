@@ -50,6 +50,11 @@ jobs:
         git fetch --depth=1 https://android.googlesource.com/kernel/common refs/tags/android13-5.10-2024-11_r6
 
         git checkout -b android13-5.10-2024-11_r6 FETCH_HEAD
+
+    - name: clone_wild_patches
+      working-directory: ${{ github.workspace }}
+      run: |
+        git clone https://github.com/WildKernels/kernel_patches.git
         
     - name: ksu_setup
       working-directory: ${{ env.KERNEL }}
@@ -80,6 +85,17 @@ jobs:
         wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
         
         sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' ./common/security/Kconfig
+
+    - name: bbrv3_setup
+      working-directory: ${{ env.KERNEL }}/common
+      run: |
+        sed -i 's/CONFIG_IP_SET_MAX/65534/g' net/netfilter/ipset/ip_set_core.c
+
+        # apply patches
+        patch -p1 < $WORKSPACE/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android12-5.10.patch
+        
+        patch -p1 < $WORKSPACE/kernel_patches/common/bbrv3/sysctl_add_proc_dou8vec_minmax.patch
+        patch -p1 < $WORKSPACE/kernel_patches/common/bbrv3/sysctl_fix_data-races_in_proc_dou8vec_minmax.patch
      
     - name: fix_wifi
       working-directory: ${{ env.KERNEL }}
@@ -126,7 +142,7 @@ jobs:
         commit_repo() {
           local dir=$1
           
-          cd "$dir"
+          cd $dir
 
           git config user.email "build@github.com"
           git config user.name "GitHub Actions"
@@ -159,7 +175,7 @@ jobs:
     - name: check_config_after_build
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep "BBG\|KSU" ./out/android13-5.10/common/.config 2>/dev/null
+        grep "BBG\|KSU\|BBR3" ./out/android13-5.10/common/.config 2>/dev/null
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
@@ -173,7 +189,7 @@ jobs:
 
         cd ../
 
-        cp $KERNEL/out/android13-5.10/dist/Image ./anykernel3/
+        cp "$KERNEL/out/android13-5.10/dist/Image ./anykernel3/"
 
         cp ./anykernel.sh ./anykernel3/anykernel.sh
 
@@ -185,7 +201,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: resukisu-5.10.223-android13
-        path: "${{ github.workspace }}/resukisu-5.10.223-android13-2024-11-anykernel3.zip"
+        path: ${{ github.workspace }}/resukisu-5.10.223-android13-2024-11-anykernel3.zip
         compression-level: 0
 
     - name: create_release
@@ -198,7 +214,7 @@ jobs:
           ## ReSukiSU + SusFS 2.2.0 + Baseband Guard
       
           - Kernel: 5.10.223 (android13-2024-11_r6)
-          - ksu_driver: (main) 35054
+          - ksu_driver: (main) 35056
 
           - tested in: a14 5g
       
