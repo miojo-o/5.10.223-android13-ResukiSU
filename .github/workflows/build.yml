@@ -161,6 +161,9 @@ jobs:
           apply_line "$line"
         done < "$FRAGMENT"
 
+        # skip savedefconfig check
+        sed -i 's/check_defconfig//' ./common/build.config.gki
+
     - name: set_kernel_version
       if: false
       working-directory: ${{ env.KERNEL }}/common
@@ -202,9 +205,6 @@ jobs:
         export SKIP_EXT_MODULES=1
         export SKIP_CP_KERNEL_HDR=1
         export SKIP_MRPROPER=1
-
-        # hack to skip savedefconfig check
-        export POST_DEFCONFIG_CMDS="true"
         
         export GKI_BUILD_CONFIG_FRAGMENT="$WORKSPACE/gki_build_overrides.fragment"
         export BUILD_CONFIG=common/build.config.gki.aarch64
