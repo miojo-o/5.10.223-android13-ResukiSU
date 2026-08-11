@@ -157,13 +157,6 @@ jobs:
           apply_line "$line"
         done < "$FRAGMENT"
 
-        # check configs
-        grep -i bbr arch/arm64/configs/gki_defconfig || echo "❌ NÃO ENCONTRADO!"
-        grep -r "DEFCONFIG" build.config* || echo "Nenhuma referência"
-
-        # skip savedefconfig check
-        sed -i 's/check_defconfig//' ./build.config.gki
-
     - name: set_kernel_version
       if: false
       working-directory: ${{ env.KERNEL }}/common
@@ -199,6 +192,9 @@ jobs:
       working-directory: ${{ env.KERNEL }}
       run: |
         set -euo pipefail
+
+        # skip savedefconfig check
+        sed -i 's/check_defconfig//' ./build.config.gki
         
         export LTO=thin
 
@@ -206,7 +202,6 @@ jobs:
         export SKIP_CP_KERNEL_HDR=1
         export SKIP_MRPROPER=1
         
-        export GKI_BUILD_CONFIG_FRAGMENT="$WORKSPACE/gki_build_overrides.fragment"
         export BUILD_CONFIG=common/build.config.gki.aarch64
         
         build/build.sh 2>&1 | tee build.log
