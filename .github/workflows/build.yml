@@ -98,10 +98,6 @@ jobs:
           patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/sysctl_add_proc_dou8vec_minmax.patch"
           patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/sysctl_fix_data-races_in_proc_dou8vec_minmax.patch"
         fi
-
-        grep -A5 "config TCP_CONG_BBR3" net/ipv4/Kconfig || echo "❌ Não encontrado!"
-    
-        grep -B5 "config TCP_CONG_BBR3" net/ipv4/Kconfig | grep -E "depends on|select" || echo "nenhuma dependência explícita"
      
     - name: fix_wifi
       working-directory: ${{ env.KERNEL }}
@@ -253,7 +249,7 @@ jobs:
           ## ReSukiSU + SusFS 2.2.0 + BBG + BBRv3
       
           - Kernel: 5.10.223 (android13-2024-11_r6)
-          - ksu_driver: (main) 35056
+          - ksu_driver: (main) 35057
 
           - tested in: a14 5g
       
