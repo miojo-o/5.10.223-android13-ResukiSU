@@ -211,7 +211,7 @@ jobs:
         tag_name: v${{ github.run_number }}
         name: ReSukiSU Build ${{ github.run_number }}
         body: |
-          ## ReSukiSU + SusFS 2.2.0 + Baseband Guard
+          ## ReSukiSU + SusFS 2.2.0 + Baseband Guard + BBRv3
       
           - Kernel: 5.10.223 (android13-2024-11_r6)
           - ksu_driver: (main) 35056
