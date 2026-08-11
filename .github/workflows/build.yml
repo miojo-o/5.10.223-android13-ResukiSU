@@ -194,7 +194,7 @@ jobs:
         set -euo pipefail
 
         # skip savedefconfig check
-        sed -i 's/check_defconfig//' ./build.config.gki
+        sed -i 's/check_defconfig//' ./common/build.config.gki
         
         export LTO=thin
 
