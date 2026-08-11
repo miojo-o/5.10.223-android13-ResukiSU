@@ -178,10 +178,10 @@ jobs:
         
         build/build.sh 2>&1 | tee build.log
   
-    - name: check_config_after_build
+    - name: check_configs
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep "BBG\|KSU\|BBR3" ./out/android13-5.10/common/.config 2>/dev/null
+        grep -E "BBG|KSU|BBG|BBR3" ./out/android13-5.10/common/.config
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
