@@ -162,7 +162,7 @@ jobs:
         done < "$FRAGMENT"
 
         # skip savedefconfig check
-        sed -i 's/check_defconfig//' .//build.config.gki
+        sed -i 's/check_defconfig//' ./build.config.gki
 
     - name: set_kernel_version
       if: false
