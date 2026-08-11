@@ -98,6 +98,10 @@ jobs:
           patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/sysctl_add_proc_dou8vec_minmax.patch"
           patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/sysctl_fix_data-races_in_proc_dou8vec_minmax.patch"
         fi
+
+        grep -A5 "config TCP_CONG_BBR3" net/ipv4/Kconfig || echo "❌ Não encontrado!"
+    
+        grep -B5 "config TCP_CONG_BBR3" net/ipv4/Kconfig | grep -E "depends on|select" || echo "nenhuma dependência explícita"
      
     - name: fix_wifi
       working-directory: ${{ env.KERNEL }}
