@@ -212,6 +212,10 @@ jobs:
         grep -E "BBG|KSU|BBR3" ./out/android13-5.10/common/.config
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
+
+        grep -i bbr ./out/android13-5.10/common/.config || echo "❌ BBR não encontrado!"
+
+        grep "TCP_CONG_BBR3" ./out/android13-5.10/common/include/generated/autoconf.h || echo "❌ Não definido no autoconf.h"
     
     - name: make_anykernel3
       working-directory: ${{ env.WORKSPACE }}
