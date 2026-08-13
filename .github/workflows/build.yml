@@ -128,7 +128,6 @@ jobs:
 
         cat > "$SCRIPT" <<'EOF'
         #!/bin/bash
-
         set -e
         EOF
 
@@ -143,7 +142,7 @@ jobs:
             value="y"
           fi
           opt="${key#CONFIG_}"
-          echo "\${KERNEL_DIR}/scripts/config --file \${OUT_DIR}/.config --set-val $opt $value" >> "$SCRIPT"
+          echo "\${KERNEL_DIR}/scripts/config --file \${OUT_DIR}/.config --set-str $opt $value" >> "$SCRIPT"
         done < "$FRAGMENT"
 
         echo "(cd \${KERNEL_DIR} && make O=\${OUT_DIR} olddefconfig)" >> "$SCRIPT"
