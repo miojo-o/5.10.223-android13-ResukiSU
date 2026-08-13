@@ -173,9 +173,9 @@ jobs:
       working-directory: ${{ env.KERNEL }}/common
       run: |
         commit_repo() {
-          local dir=$1
+          local "dir=$1"
           
-          cd $dir
+          cd "$dir"
           git config user.email "build@github.com"
           git config user.name "GitHub Actions"
           
@@ -210,8 +210,6 @@ jobs:
         grep -E "BBG|KSU|BBR3" ./out/android13-5.10/common/.config
         
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
-        
-        grep -i bbr ./out/android13-5.10/common/.config || echo "❌ BBR não encontrado!"
     
     - name: make_anykernel3
       working-directory: ${{ env.WORKSPACE }}
