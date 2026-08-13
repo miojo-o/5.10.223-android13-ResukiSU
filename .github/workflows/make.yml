@@ -157,16 +157,9 @@ jobs:
         done < "$FRAGMENT"
 
     - name: set_kernel_version
-      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
-        tac ./scripts/setlocalversion | awk '!seen && /^echo / {seen=1; next} 1' | tac > ./scripts/setlocalversion.tmp
-        
-        mv ./scripts/setlocalversion.tmp ./scripts/setlocalversion
-        
-        echo 'echo "-a13..."' >> ./scripts/setlocalversion
-        
-        chmod +x ./scripts/setlocalversion
+        sed -i 's/-dirty//' ./scripts/setlocalversion
         
     - name: commit_changes
       working-directory: ${{ env.KERNEL }}/common
