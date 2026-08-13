@@ -119,21 +119,22 @@ jobs:
           "susfs_is_current_zygote_domain" \
           "susfs_is_current_init_domain" \
           >> ./common/drivers/kernelsu/selinux/selinux.c
-        
-    - name: apply_config.fragment
+
+    - name: Generate POST_DEFCONFIG_CMDS
       working-directory: ${{ env.KERNEL }}/common
       run: |
-        DEFCONFIG="arch/arm64/configs/gki_defconfig"
         FRAGMENT="$WORKSPACE/config.fragment"
+        SCRIPT="$WORKSPACE/post_defconfig.sh"
 
-        apply_line() {
-          local line="$1"
-          line="$(echo "$line" | xargs)"   
+        cat > "$SCRIPT" <<'EOF'
+        #!/bin/bash
 
-          [[ -z "$line" || "$line" == \#* ]] && return
+        set -e
+        EOF
 
-          local key value
-
+        while IFS= read -r line || [ -n "$line" ]; do
+          line="$(echo "$line" | xargs)"
+          [[ -z "$line" || "$line" == \#* ]] && continue
           if [[ "$line" == *"="* ]]; then
             key="${line%%=*}"
             value="${line#*=}"
@@ -141,21 +142,14 @@ jobs:
             key="$line"
             value="y"
           fi
-
-          echo "apply: $key=$value"
-  
-          if grep -q "^$key=" "$DEFCONFIG"; then
-            sed -i "s|^$key=.*|$key=$value|g" "$DEFCONFIG"
-          elif grep -q "^# $key is not set" "$DEFCONFIG"; then
-            sed -i "s|^# $key is not set|$key=$value|g" "$DEFCONFIG"
-          else
-            echo "$key=$value" >> "$DEFCONFIG"
-          fi
-        }
-
-        while IFS= read -r line || [ -n "$line" ]; do
-          apply_line "$line"
+          opt="${key#CONFIG_}"
+          echo "\${KERNEL_DIR}/scripts/config --file \${OUT_DIR}/.config --set-val $opt $value" >> "$SCRIPT"
         done < "$FRAGMENT"
+
+        echo "(cd \${KERNEL_DIR} && make O=\${OUT_DIR} olddefconfig)" >> "$SCRIPT"
+
+        chmod +x "$SCRIPT"
+        cat "$SCRIPT"
 
     - name: set_kernel_version
       if: false
@@ -203,6 +197,7 @@ jobs:
         export SKIP_MRPROPER=1
         
         export BUILD_CONFIG=common/build.config.gki.aarch64
+        export POST_DEFCONFIG_CMDS="$(cat $WORKSPACE/post_defconfig.sh)"
         
         build/build.sh 2>&1 | tee build.log
   
@@ -212,10 +207,6 @@ jobs:
         grep -E "BBG|KSU|BBR3" ./out/android13-5.10/common/.config
 
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
-
-        grep -i bbr ./out/android13-5.10/common/.config || echo "❌ BBR não encontrado!"
-
-        grep "TCP_CONG_BBR3" ./out/android13-5.10/common/include/generated/autoconf.h || echo "❌ Não definido no autoconf.h"
     
     - name: make_anykernel3
       working-directory: ${{ env.WORKSPACE }}
