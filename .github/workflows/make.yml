@@ -157,6 +157,7 @@ jobs:
         done < "$FRAGMENT"
 
     - name: set_kernel_version
+      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
         sed -i 's/-dirty//' ./scripts/setlocalversion
