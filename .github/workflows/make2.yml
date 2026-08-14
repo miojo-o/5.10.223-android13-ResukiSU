@@ -127,8 +127,10 @@ jobs:
         apply_line() {
           local line="$1"
           
-          line="$(echo "$line" | xargs)"   
+          line="$(echo "$line" | xargs)"
+           
           [[ -z "$line" || "$line" == \#* ]] && return
+
           local key value
           
           if [[ "$line" == *"="* ]]; then
@@ -155,15 +157,22 @@ jobs:
         done < "$FRAGMENT"
 
     - name: set_kernel_version
+      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
-         sed -i 's/-dirty//' ./scripts/setlocalversion
+        tac ./scripts/setlocalversion | awk '!seen && /^echo / {seen=1; next} 1' | tac > ./scripts/setlocalversion.tmp
+        
+        mv ./scripts/setlocalversion.tmp ./scripts/setlocalversion
+        
+        echo 'echo "-a13..."' >> ./scripts/setlocalversion
+        
+        chmod +x ./scripts/setlocalversion
         
     - name: commit_changes
       working-directory: ${{ env.KERNEL }}/common
       run: |
         commit_repo() {
-          local "dir=$1"
+          local dir="$1"
           
           cd "$dir"
           
@@ -187,6 +196,7 @@ jobs:
         sed -i 's/check_defconfig//' ./common/build.config.gki
         
         export LTO=thin
+        
         export SKIP_EXT_MODULES=1
         export SKIP_CP_KERNEL_HDR=1
         export SKIP_MRPROPER=1
@@ -202,6 +212,8 @@ jobs:
         
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
         
+        grep -i bbr ./out/android13-5.10/common/.config || echo "❌ BBR não encontrado!"
+    
     - name: make_anykernel3
       working-directory: ${{ env.WORKSPACE }}
       run: |
