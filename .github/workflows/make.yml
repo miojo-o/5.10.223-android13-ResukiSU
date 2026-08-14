@@ -162,6 +162,7 @@ jobs:
         sed -i 's/-dirty//' ./scripts/setlocalversion
         
     - name: commit_changes
+      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
         commit_repo() {
