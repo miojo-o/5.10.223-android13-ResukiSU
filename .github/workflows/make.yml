@@ -157,7 +157,6 @@ jobs:
         done < "$FRAGMENT"
 
     - name: set_kernel_version
-      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
         sed -i 's/-dirty//' ./scripts/setlocalversion
@@ -166,7 +165,7 @@ jobs:
       working-directory: ${{ env.KERNEL }}/common
       run: |
         commit_repo() {
-          local "dir=$1"
+          local dir="$1"
           
           cd "$dir"
           
