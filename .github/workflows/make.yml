@@ -190,6 +190,7 @@ jobs:
         sed -i 's/check_defconfig//' ./common/build.config.gki
         
         export LTO=thin
+        
         export SKIP_EXT_MODULES=1
         export SKIP_CP_KERNEL_HDR=1
         export SKIP_MRPROPER=1
@@ -201,7 +202,7 @@ jobs:
     - name: check_config_after_build
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep -E "BBG|KSU|BBR3" ./out/android13-5.10/common/.config
+        grep -E "BBG|KSU|BBR" ./out/android13-5.10/common/.config
         
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
