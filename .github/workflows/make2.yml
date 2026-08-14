@@ -163,7 +163,7 @@ jobs:
       working-directory: ${{ env.KERNEL }}/common
       run: |
         commit_repo() {
-          local dir="$1"
+          local "dir=$1"
           
           cd "$dir"
           
