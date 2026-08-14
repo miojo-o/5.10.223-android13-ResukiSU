@@ -157,7 +157,6 @@ jobs:
         done < "$FRAGMENT"
 
     - name: set_kernel_version
-      if: false
       working-directory: ${{ env.KERNEL }}/common
       run: |
         sed -i 's/-dirty//' ./scripts/setlocalversion
@@ -202,7 +201,7 @@ jobs:
     - name: check_config_after_build
       working-directory: ${{ env.KERNEL }}
       run: |
-        grep -E "BBG|KSU|BBR" ./out/android13-5.10/common/.config
+        grep -E "BBG|KSU|BBR|TCP_CONG" ./out/android13-5.10/common/.config
         
         cat ./out/android13-5.10/common/include/generated/utsrelease.h
     
