@@ -66,7 +66,7 @@ jobs:
         
         cd ./susfs4ksu
         
-        git checkout c01c5a890ba8788335fbfc6cc9cb2cfd305ff5d8
+        #git checkout c01c5a890ba8788335fbfc6cc9cb2cfd305ff5d8
         
         cp ./kernel_patches/50_add_susfs_in_gki-android13-5.10.patch ../common/
         
@@ -87,7 +87,7 @@ jobs:
     - name: bbrv3_setup
       working-directory: ${{ env.KERNEL }}/common
       run: |
-        sed -i 's/CONFIG_IP_SET_MAX/65534/g' net/netfilter/ipset/ip_set_core.c
+        sed -i 's/CONFIG_IP_SET_MAX/65534/g' ./net/netfilter/ipset/ip_set_core.c
         
         # apply patches
         patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android12-5.10.patch"
@@ -97,7 +97,7 @@ jobs:
           patch -p1 < "$WORKSPACE/kernel_patches/common/bbrv3/sysctl_fix_data-races_in_proc_dou8vec_minmax.patch"
         fi
      
-    - name: fix_wifi
+    - name: delete_exports
       working-directory: ${{ env.KERNEL }}
       run: |
         rm -rf ./common/android/abi_gki_protected_exports_aarch64
@@ -118,7 +118,7 @@ jobs:
           "susfs_is_current_init_domain" \
           >> ./common/drivers/kernelsu/selinux/selinux.c
         
-    - name: apply_config.fragment
+    - name: apply_config_fragment
       working-directory: ${{ env.KERNEL }}/common
       run: |
         DEFCONFIG="arch/arm64/configs/gki_defconfig"
@@ -170,11 +170,11 @@ jobs:
           cd "$dir"
           
           git config user.email "build@github.com"
-          git config user.name "GitHub Actions"
+          git config user.name "miojo_o"
           
           git add -A
           
-          git diff --cached --quiet || git commit -m "apply patches"
+          git diff --cached --quiet || git commit -m "miojo_o clean dirty"
         }
         
         commit_repo "$KERNEL/KernelSU"
