@@ -8,3 +8,8 @@
 | SoC | Exynos 850 (s5e3830) |
 | Android | 15 |
 | Architecture | arm64-v8a |
+
+## Features
+- susfs 2.2.0
+- bbg
+- bbr
