@@ -42,6 +42,8 @@ jobs:
     - name: clone_twrp
       working-directory: ${{ github.workspace }}
       run: |
+        mkdir -p ./twrp && cd ./twrp
+        
         repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1 --depth=1
 
         repo sync -j$(nproc) --force-sync --no-clone-bundle --no-tags
@@ -49,9 +51,9 @@ jobs:
     - name: clone_device_tree
       working-directory: ${{ github.workspace }}
       run: |
-        mkdir -p ~/twrp/device/samsung
+        mkdir -p ./twrp/device/samsung
 
-        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ~/twrp/device/samsung/a145m
+        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ./twrp/device/samsung/a145m
         
     - name: replace_image
       working-directory: ${{ github.workspace }}
@@ -62,10 +64,9 @@ jobs:
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
 
-    - name: Build recovery image
-      working-directory: ${{ github.workspace }}
+    - name: make_image
+      working-directory: ${{ github.workspace }}/twrp
       run: |
-          cd ./twrp
 
           source build/envsetup.sh
 
