@@ -4,7 +4,6 @@ on:
 
 env:
   WORKSPACE: ${{ github.workspace }}
-  KERNEL: "${{ github.workspace }}/kernel"
 
 jobs:
   build:
@@ -40,12 +39,12 @@ jobs:
         
         sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo abootimg
 
-    - name: clone_twrp_a145p
+    - name: clone_twrp
       working-directory: ${{ github.workspace }}
       run: |
-        repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1
+        repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1 --depth=1
 
-        repo sync -j$(nproc) --force-sync
+        repo sync -j$(nproc) --force-sync --no-clone-bundle --no-tags
 
     - name: clone_device_tree
       working-directory: ${{ github.workspace }}
@@ -54,3 +53,7 @@ jobs:
 
         ls -a
 
+    - name: copy_blobs
+      working-directory: ${{ github.workspace }}
+      run: |
+        cp -r "$WORKSPACE/" ~/twrp/device/samsung/a145m/
