@@ -46,24 +46,19 @@ jobs:
 
         repo sync -j$(nproc) --force-sync --no-clone-bundle --no-tags
 
-        ls -a
-
     - name: clone_device_tree
-      if: false
       working-directory: ${{ github.workspace }}
       run: |
         git clone https://github.com/forforksake/recovery_device_samsung_a14m.git a14m
 
         ls -a
-
+        
     - name: copy_blobs
-      if: false
       working-directory: ${{ github.workspace }}
       run: |
         cp -r ./a14m/recovery ~/twrp/device/samsung/a145m/
         
     - name: replace_image
-      if: false
       working-directory: ${{ github.workspace }}
       run: |
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
