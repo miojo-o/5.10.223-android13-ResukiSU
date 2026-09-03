@@ -18,6 +18,11 @@ jobs:
    
     steps:
     - uses: actions/checkout@v4
+
+    - name: set_up_ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ runner.os }}-twrp
     
     - name: free_disk_space
       uses: jlumbroso/free-disk-space@main
@@ -61,7 +66,17 @@ jobs:
         cd ./twrp/device/samsung
         ln -s a145m a14m
         
+    - name: get_more_space
+      working-directory: ${{ github.workspace }}/twrp
+      run: |
+        rm -rf ./twrp/device/samsung/a145m/recovery/root/vendor/tee
+        rm -rf ./twrp/device/samsung/a145m/recovery/root/system/etc/vintf
+        rm -f ./twrp/device/samsung/a145m/recovery/root/vendor/firmware/soc1_0_ram_bt_*.bin
+        rm -rf ./twrp/device/samsung/a145m/recovery/root/vendor/tee/driver
+        rm -f ./twrp/device/samsung/a145m/recovery/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin
+ 
     - name: replace_image
+      if: false
       working-directory: ${{ github.workspace }}
       run: |
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
