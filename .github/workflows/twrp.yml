@@ -67,12 +67,11 @@ jobs:
     - name: make_image
       working-directory: ${{ github.workspace }}/twrp
       run: |
-
           source build/envsetup.sh
 
           export ALLOW_MISSING_DEPENDENCIES=true
 
-          lunch twrp_a145m-eng
+          lunch twrp_a14m-eng
 
           mka recoveryimage -j$(nproc)
           
