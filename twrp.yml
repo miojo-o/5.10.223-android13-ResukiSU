@@ -23,7 +23,7 @@ jobs:
     - name: free_disk_space
       uses: jlumbroso/free-disk-space@main
       with:
-        tool-cache: false
+        tool-cache: true
         android: true
         dotnet: true
         haskell: true
@@ -36,6 +36,9 @@ jobs:
       run: |
         sudo apt update && sudo apt upgrade -y
 
+        # delete this
+        sudo apt remove -y lib32ncurses5-dev || true
+        
         sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo abootimg
 
     - name: clone_twrp_a145p
