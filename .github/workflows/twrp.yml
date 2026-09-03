@@ -35,6 +35,8 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         sudo apt update && sudo apt upgrade -y
+
+        sudo apt remove -y lib32ncurses5-dev || true
         
         sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32z-dev libc6-dev-i386 libgl1-mesa-dev libx11-dev libxml2-utils xsltproc zip zlib1g-dev python3
 
