@@ -35,14 +35,22 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         sudo apt update && sudo apt upgrade -y
-        
 
-        sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo
+        sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo abootimg
 
     - name: clone_twrp_a145p
       working-directory: ${{ github.workspace }}
       run: |
-        git clone repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1
+        repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1 abootimg
+
+        repo sync -j$(nproc) --force-sync
+
+    - name: get_image
+      working-directory: ${{ github.workspace }}
+      run: |
+        abootimg -x boot.img
+        
+        mv zImage Image
 
     - name: clone_device_tree
       working-directory: ${{ github.workspace }}
