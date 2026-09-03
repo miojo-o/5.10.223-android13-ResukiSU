@@ -1,0 +1,52 @@
+on:
+   push:
+     branches: [main]
+
+env:
+  WORKSPACE: ${{ github.workspace }}
+  KERNEL: "${{ github.workspace }}/kernel"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+   
+    permissions:
+      contents: write
+     
+    defaults:
+      run:
+        shell: bash
+   
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: free_disk_space
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
+    - name: install_packages
+      working-directory: ${{ github.workspace }}
+      run: |
+        sudo apt update && sudo apt upgrade -y
+        
+        sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32z-dev libc6-dev-i386 libgl1-mesa-dev libx11-dev libxml2-utils xsltproc zip zlib1g-dev python3
+
+    - name: clone_twrp_a145p
+      working-directory: ${{ github.workspace }}
+      run: |
+        git clone repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b twrp-12.1
+
+    - name: clone_device_tree
+      working-directory: ${{ github.workspace }}
+      run: |
+        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git
+
+        ls -a
+

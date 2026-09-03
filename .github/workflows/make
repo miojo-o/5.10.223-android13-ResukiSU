@@ -36,6 +36,7 @@ jobs:
         sudo apt-get update && sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev libxml2-utils xsltproc unzip ccache repo
           
     - name: clone_kernel_source
+      working-directory: ${{ github.workspace }}
       run: |
         mkdir -p $KERNEL && cd $KERNEL
         
