@@ -49,11 +49,11 @@ jobs:
     - name: clone_device_tree
       working-directory: ${{ github.workspace }}
       run: |
-        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git
+        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git a14m
 
         ls -a
 
     - name: copy_blobs
       working-directory: ${{ github.workspace }}
       run: |
-        cp -r "$WORKSPACE/" ~/twrp/device/samsung/a145m/
+        cp -r ./a14m/recovery ~/twrp/device/samsung/a145m/
