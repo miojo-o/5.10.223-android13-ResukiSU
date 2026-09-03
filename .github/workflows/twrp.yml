@@ -52,15 +52,6 @@ jobs:
         mkdir -p ~/twrp/device/samsung
 
         git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ~/twrp/device/samsung/a145m
-
-        ls -a
-        
-    - name: copy_blobs
-      working-directory: ${{ github.workspace }}
-      run: |
-        ls -a
-        
-        cp -r ./a14m/recovery ~/twrp/device/samsung/a145m/
         
     - name: replace_image
       working-directory: ${{ github.workspace }}
@@ -70,3 +61,22 @@ jobs:
         cp ./Image ./twrp/device/samsung/a145m/prebuilt/Image
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
+
+    - name: Build recovery image
+      working-directory: ${{ github.workspace }}
+      run: |
+          cd ./twrp
+
+          source build/envsetup.sh
+
+          export ALLOW_MISSING_DEPENDENCIES=true
+
+          lunch twrp_a145m-eng
+
+          mka recoveryimage -j$(nproc)
+          
+    - name: upload_recovery
+      uses: actions/upload-artifact@v4
+      with:
+        name: twrp-a145m
+        path: ~/twrp/out/target/product/a145m/recovery.img
