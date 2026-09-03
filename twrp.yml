@@ -36,7 +36,7 @@ jobs:
       run: |
         sudo apt update && sudo apt upgrade -y
 
-        # delete this
+        # delete
         sudo apt remove -y lib32ncurses5-dev || true
         
         sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo abootimg
