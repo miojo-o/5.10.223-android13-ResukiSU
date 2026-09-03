@@ -56,8 +56,9 @@ jobs:
         git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ./twrp/device/samsung/a145m
 
     - name: fix_device_path(create symlink)
+      working-directory: ${{ github.workspace }}
       run: |
-        cd ~/twrp/device/samsung
+        cd ./twrp/device/samsung
         ln -s a145m a14m
         
     - name: replace_image
@@ -84,4 +85,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: twrp-a145m
-        path: ~/twrp/out/target/product/a145m/recovery.img
+        path: ./twrp/out/target/product/a14m/recovery.img
