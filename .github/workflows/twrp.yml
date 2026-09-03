@@ -46,12 +46,12 @@ jobs:
 
         repo sync -j$(nproc) --force-sync --no-clone-bundle --no-tags
 
-    - name: clone_device_tree
+    - name: Clone device tree
       working-directory: ${{ github.workspace }}
       run: |
-        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git a14m
+        mkdir -p ~/twrp/device/samsung
 
-        ls -a
+        git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ~/twrp/device/samsung/a145m
         
     - name: copy_blobs
       working-directory: ${{ github.workspace }}
