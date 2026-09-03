@@ -8,7 +8,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
    
     permissions:
       contents: write
@@ -60,3 +60,7 @@ jobs:
 
         ls -a
 
+    - name:
+      working-directory: ${{ github.workspace }}
+      run: |
+        
