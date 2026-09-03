@@ -59,21 +59,22 @@ jobs:
         mkdir -p ./twrp/device/samsung
 
         git clone https://github.com/forforksake/recovery_device_samsung_a14m.git ./twrp/device/samsung/a145m
+        
+    - name: get_more_space
+      working-directory: ${{ github.workspace }}/twrp
+      run: |
+        RECOVERY="./device/samsung/a145m/recovery"
+        rm -rf "$RECOVERY/root/vendor/tee"
+        rm -rf "$RECOVERY/root/system/etc/vintf"
+        rm -rf "$RECOVERY/root/vendor/firmware/soc1_0_ram_bt_*.bin"
+        rm -rf "$RECOVERY/root/vendor/tee/driver"
+        rm -rf "$RECOVERY/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin"
 
     - name: fix_device_path(create symlink)
       working-directory: ${{ github.workspace }}
       run: |
         cd ./twrp/device/samsung
         ln -s a145m a14m
-        
-    - name: get_more_space
-      working-directory: ${{ github.workspace }}/twrp
-      run: |
-        rm -rf ./device/samsung/a145m/recovery/root/vendor/tee
-        rm -rf ./device/samsung/a145m/recovery/root/system/etc/vintf
-        rm -f ./device/samsung/a145m/recovery/root/vendor/firmware/soc1_0_ram_bt_*.bin
-        rm -rf ./device/samsung/a145m/recovery/root/vendor/tee/driver
-        rm -f ./device/samsung/a145m/recovery/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin
  
     - name: replace_image
       if: false
