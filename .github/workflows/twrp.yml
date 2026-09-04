@@ -81,26 +81,38 @@ jobs:
     - name: replace_archives
       working-directory: ${{ github.workspace }}
       run: |
-  
-        mkdir -p extracted
-        unpackbootimg -i ./boot.img -o extracted/
+        wget -O aik-unpack https://raw.githubusercontent.com/osm0sis/Android-Image-Kitchen/master/scripts/unpackbootimg
+    
+        chmod +x aik-unpack
 
-        if [ -f "extracted/boot.img-zImage" ]; then
-          cp extracted/boot.img-zImage ./Image
+        mkdir -p extracted
+
+        ./aik-unpack ./boot.img extracted/
+
+        if [ -f "extracted/zImage" ]; then
+          cp extracted/zImage ./Image
           echo "✅ Kernel extraído como Image"
         else
           echo "❌ Kernel não encontrado!"
           exit 1
         fi
 
-        if [ -f "extracted/boot.img-dtb" ]; then
-          cp extracted/boot.img-dtb ./dtb.img
+        if [ -f "extracted/dtb" ]; then
+          cp extracted/dtb ./dtb.img
           echo "✅ DTB extraído"
+        elif [ -f "extracted/boot.img-dtb" ]; then
+          cp extracted/boot.img-dtb ./dtb.img
+          echo "✅ DTB extraído (boot.img-dtb)"
         else
-          echo "⚠️ DTB não encontrado"
+          echo "⚠️ DTB não encontrado. Usando o da árvore (pode incompatível)"
         fi
-    
-        rm -rf extracted
+
+        if [ -f "./dtbo.img" ]; then
+          cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
+          echo "✅ DTBO copiado da raiz"
+        else
+          echo "⚠️ DTBO não fornecido – usando o da árvore"
+        fi
 
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
 
@@ -110,6 +122,8 @@ jobs:
         [ -f "./dtbo.img" ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
+
+        rm -rf extracted aik-unpack
 
     - name: make_image
       working-directory: ${{ github.workspace }}/twrp
