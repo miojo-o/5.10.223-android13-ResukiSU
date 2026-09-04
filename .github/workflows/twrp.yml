@@ -79,7 +79,7 @@ jobs:
     - name: replace_archives
       working-directory: ${{ github.workspace }}
       run: |
-        git clone https://github.com/osm0sis/Android-Image-Kitchen.git aik
+        git clone -b AIK-Linux https://github.com/osm0sis/Android-Image-Kitchen.git aik
 
         cd aik
         chmod +x unpackimg.sh
