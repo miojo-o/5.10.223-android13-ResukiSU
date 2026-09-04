@@ -126,8 +126,7 @@ jobs:
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
 
-    # 10. Limpa arquivos temporários
-    rm -rf aik
+        rm -rf aik
 
     - name: make_image
       working-directory: ${{ github.workspace }}/twrp
