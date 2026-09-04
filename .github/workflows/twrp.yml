@@ -79,37 +79,34 @@ jobs:
     - name: replace_archives
       working-directory: ${{ github.workspace }}
       run: |
-        mkdir -p extracted
+        abootimg -x ./boot.img 
+        abootimg -d ./boot.img dtb.img  
 
-        unpackbootimg -i ./boot.img -o extracted/
-
-        if [ -f "extracted/boot.img-zImage" ]; then
-          cp extracted/boot.img-zImage ./Image
+        if [ -f "zImage" ]; then
+          mv zImage Image
           echo "✅ Kernel extraído como Image"
         else
           echo "❌ Kernel não encontrado!"
           exit 1
         fi
 
-        if [ -f "extracted/boot.img-dtb" ]; then
-          cp extracted/boot.img-dtb ./dtb.img
-          echo "✅ DTB extraído"
-        fi
-
-        if [ -f "extracted/boot.img-dtbo" ]; then
-          cp extracted/boot.img-dtbo ./dtbo.img
-          echo "✅ DTBO extraído"
-        fi
-
-        rm -rf extracted
-
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
 
-        cp ./Image ./twrp/device/samsung/a145m/prebuilt/Image
-        
-        [ -f "./dtb.img" ] && cp ./dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
+        cp Image ./twrp/device/samsung/a145m/prebuilt/Image
 
-        [ -f "./dtbo.img" ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
+        if [ -f "dtb.img" ]; then
+          cp dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
+          echo "✅ DTB extraído"
+        else
+          echo "⚠️ DTB não extraído (usando o da árvore)"
+        fi
+
+        if [ -f "./dtbo.img" ]; then
+          cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
+          echo "✅ DTBO copiado da raiz"
+        else
+          echo "⚠️ DTBO não encontrado – usando o da árvore (pode ser incompatível)"
+        fi
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
 
