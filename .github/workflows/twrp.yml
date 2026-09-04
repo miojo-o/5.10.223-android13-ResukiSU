@@ -89,24 +89,7 @@ jobs:
           exit 1
         fi
 
-        python3 -c "
-import struct, sys
-with open('./boot.img', 'rb') as f:
-    data = f.read()
-    if data[:8] != b'ANDROID!':
-        sys.exit('Magic not found')
-    dtb_start = 0
-    for i in range(2048, len(data), 4):
-        if data[i:i+4] == b'\xd0\x0d\xfe\xed':
-            dtb_start = i
-            break
-    if dtb_start == 0:
-        sys.exit('DTB não encontrado')
-    dtb_size = struct.unpack('>I', data[dtb_start+4:dtb_start+8])[0]
-    with open('dtb.img', 'wb') as f:
-        f.write(data[dtb_start:dtb_start+dtb_size])
-    print('DTB extraído com sucesso')
-" || echo "⚠️ DTB não extraído – usando o da árvore"
+        python3 extract_dtb.py ./boot.img dtb.img || echo "⚠️ DTB não extraído – usando o da árvore"
 
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
 
