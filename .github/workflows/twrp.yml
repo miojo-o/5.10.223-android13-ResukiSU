@@ -44,8 +44,6 @@ jobs:
         
         sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo
 
-        pip install unpackbootimg
-
     - name: clone_twrp
       working-directory: ${{ github.workspace }}
       run: |
