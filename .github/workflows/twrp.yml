@@ -66,12 +66,11 @@ jobs:
         RECOVERY="./device/samsung/a145m/recovery"
 
         # more space
-        sed -i 's/BOARD_RECOVERYIMAGE_PARTITION_SIZE := .*/BOARD_RECOVERYIMAGE_PARTITION_SIZE := 90000000/g' ./twrp/device/samsung/a145m/BoardConfig.mk
+        #sed -i 's/BOARD_RECOVERYIMAGE_PARTITION_SIZE := .*/BOARD_RECOVERYIMAGE_PARTITION_SIZE := 90000000/g' ./twrp/device/samsung/a145m/BoardConfig.mk
         
         rm -rf "$RECOVERY/root/vendor/tee"
         rm -rf "$RECOVERY/root/system/etc/vintf"
 
-        
         rm -f "$RECOVERY/root/vendor/firmware/soc1_0_ram_bt_*.bin"
         rm -f "$RECOVERY/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin"
 
