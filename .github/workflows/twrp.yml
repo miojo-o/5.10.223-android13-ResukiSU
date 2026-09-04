@@ -42,7 +42,9 @@ jobs:
 
         sudo apt remove -y lib32ncurses5-dev || true
         
-        sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo abootimg mkbootimg
+        sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libncurses-dev libz-dev libxml2-utils xsltproc zip zlib1g-dev python3 repo
+
+        pip install unpackbootimg
 
     - name: clone_twrp
       working-directory: ${{ github.workspace }}
@@ -79,34 +81,33 @@ jobs:
     - name: replace_archives
       working-directory: ${{ github.workspace }}
       run: |
-        abootimg -x ./boot.img 
-        abootimg -d ./boot.img dtb.img  
+  
+        mkdir -p extracted
+        unpackbootimg -i ./boot.img -o extracted/
 
-        if [ -f "zImage" ]; then
-          mv zImage Image
+        if [ -f "extracted/boot.img-zImage" ]; then
+          cp extracted/boot.img-zImage ./Image
           echo "✅ Kernel extraído como Image"
         else
           echo "❌ Kernel não encontrado!"
           exit 1
         fi
 
-        mkdir -p ./twrp/device/samsung/a145m/prebuilt
-
-        cp Image ./twrp/device/samsung/a145m/prebuilt/Image
-
-        if [ -f "dtb.img" ]; then
-          cp dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
+        if [ -f "extracted/boot.img-dtb" ]; then
+          cp extracted/boot.img-dtb ./dtb.img
           echo "✅ DTB extraído"
         else
-          echo "⚠️ DTB não extraído (usando o da árvore)"
+          echo "⚠️ DTB não encontrado"
         fi
+    
+        rm -rf extracted
 
-        if [ -f "./dtbo.img" ]; then
-          cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
-          echo "✅ DTBO copiado da raiz"
-        else
-          echo "⚠️ DTBO não encontrado – usando o da árvore (pode ser incompatível)"
-        fi
+        mkdir -p ./twrp/device/samsung/a145m/prebuilt
+
+        cp ./Image ./twrp/device/samsung/a145m/prebuilt/Image
+        
+        [ -f "./dtb.img" ] && cp ./dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
+        [ -f "./dtbo.img" ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
 
