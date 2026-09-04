@@ -77,7 +77,6 @@ jobs:
         ln -s a145m a14m
  
     - name: replace_archives
-      if: false
       working-directory: ${{ github.workspace }}
       run: |
         mkdir -p extracted
