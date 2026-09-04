@@ -76,32 +76,19 @@ jobs:
         cd ./twrp/device/samsung
         ln -s a145m a14m
  
-    - name: replace_archives
+    - name: copy_kernel_and_dtb
       working-directory: ${{ github.workspace }}
       run: |
-        abootimg -x ./boot.img || true
-
-        if [ -f zImage ]; then
-          mv zImage Image
-          echo "✅ Kernel extraído como Image"
-        else
-          echo "❌ Kernel não encontrado!"
-          exit 1
-        fi
-
-        python3 extract_dtb.py ./boot.img dtb.img || echo "⚠️ DTB não extraído – usando o da árvore"
-
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
 
-        cp Image ./twrp/device/samsung/a145m/prebuilt/Image
+        cp ./Image ./twrp/device/samsung/a145m/prebuilt/Image
 
-        [ -f dtb.img ] && cp dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img || echo "⚠️ Usando DTB da árvore"
-        [ -f ./dtbo.img ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img || echo "⚠️ DTBO da árvore"
+        cp ./dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
+
+        cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
         
-        rm -f zImage initrd.img bootimg.cfg
-
     - name: make_image
       working-directory: ${{ github.workspace }}/twrp
       run: |
