@@ -79,54 +79,45 @@ jobs:
     - name: replace_archives
       working-directory: ${{ github.workspace }}
       run: |
-        git clone -b AIK-Linux https://github.com/osm0sis/Android-Image-Kitchen.git aik
+        abootimg -x ./boot.img || true
 
-        cd aik
-        chmod +x unpackimg.sh
-
-        ./unpackimg.sh ../boot.img
-
-        cd ..
-
-        KERNEL="aik/split_img/boot.img-zImage"
-        DTB="aik/split_img/boot.img-dtb"
-        DTBO="aik/split_img/boot.img-dtbo"
-
-        if [ -f "$KERNEL" ]; then
-          cp "$KERNEL" ./Image
+        if [ -f zImage ]; then
+          mv zImage Image
           echo "✅ Kernel extraído como Image"
         else
           echo "❌ Kernel não encontrado!"
           exit 1
         fi
 
-        if [ -f "$DTB" ]; then
-          cp "$DTB" ./dtb.img
-          echo "✅ DTB extraído"
-        else
-          echo "⚠️ DTB não encontrado – usando o da árvore"
-        fi
-
-        if [ -f "$DTBO" ]; then
-          cp "$DTBO" ./dtbo.img
-          echo "✅ DTBO extraído do boot.img"
-        elif [ -f "./dtbo.img" ]; then
-          cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
-          echo "✅ DTBO copiado da raiz"
-        else
-          echo "⚠️ DTBO não fornecido – usando o da árvore"
-        fi
+        python3 -c "
+import struct, sys
+with open('./boot.img', 'rb') as f:
+    data = f.read()
+    if data[:8] != b'ANDROID!':
+        sys.exit('Magic not found')
+    dtb_start = 0
+    for i in range(2048, len(data), 4):
+        if data[i:i+4] == b'\xd0\x0d\xfe\xed':
+            dtb_start = i
+            break
+    if dtb_start == 0:
+        sys.exit('DTB não encontrado')
+    dtb_size = struct.unpack('>I', data[dtb_start+4:dtb_start+8])[0]
+    with open('dtb.img', 'wb') as f:
+        f.write(data[dtb_start:dtb_start+dtb_size])
+    print('DTB extraído com sucesso')
+" || echo "⚠️ DTB não extraído – usando o da árvore"
 
         mkdir -p ./twrp/device/samsung/a145m/prebuilt
 
-        cp ./Image ./twrp/device/samsung/a145m/prebuilt/Image
-    
-        [ -f "./dtb.img" ] && cp ./dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img
-        [ -f "./dtbo.img" ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img
+        cp Image ./twrp/device/samsung/a145m/prebuilt/Image
+
+        [ -f dtb.img ] && cp dtb.img ./twrp/device/samsung/a145m/prebuilt/dtb.img || echo "⚠️ Usando DTB da árvore"
+        [ -f ./dtbo.img ] && cp ./dtbo.img ./twrp/device/samsung/a145m/prebuilt/dtbo.img || echo "⚠️ DTBO da árvore"
 
         echo "TARGET_PREBUILT_KERNEL := \$(DEVICE_PATH)/prebuilt/Image" >> ./twrp/device/samsung/a145m/BoardConfig.mk
-
-        rm -rf aik
+        
+        rm -f zImage initrd.img bootimg.cfg
 
     - name: make_image
       working-directory: ${{ github.workspace }}/twrp
