@@ -66,9 +66,9 @@ jobs:
         RECOVERY="./device/samsung/a145m/recovery"
         rm -rf "$RECOVERY/root/vendor/tee"
         rm -rf "$RECOVERY/root/system/etc/vintf"
-        rm -rf "$RECOVERY/root/vendor/firmware/soc1_0_ram_bt_*.bin"
+        rm -f "$RECOVERY/root/vendor/firmware/soc1_0_ram_bt_*.bin"
         rm -rf "$RECOVERY/root/vendor/tee/driver"
-        rm -rf "$RECOVERY/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin"
+        rm -f "$RECOVERY/root/vendor/firmware/WIFI_RAM_CODE_soc1_0_1a_1.bin"
 
     - name: fix_device_path(create symlink)
       working-directory: ${{ github.workspace }}
