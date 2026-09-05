@@ -10,6 +10,6 @@
 | Architecture | arm64-v8a |
 
 ## Features
-- susfs 2.3.0
-- bbg
-- bbr
+- SuSFS 2.3.0
+- BBG
+- BBRv3
