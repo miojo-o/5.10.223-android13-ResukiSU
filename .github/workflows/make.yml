@@ -117,7 +117,7 @@ jobs:
           "susfs_is_current_init_domain" \
           >> ./common/drivers/kernelsu/selinux/selinux.c
 
-          grep -rn "ksu_install_su_fd" ./KernelSU/ | grep -v "\.h:" | head -5
+        grep -rn "ksu_install_su_fd" ./KernelSU/ | grep -v "\.h:" | head -5
         
     - name: apply_config_fragment
       working-directory: ${{ env.KERNEL }}/common
