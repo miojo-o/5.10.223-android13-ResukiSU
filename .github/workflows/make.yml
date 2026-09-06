@@ -107,8 +107,6 @@ jobs:
         sed -i 's/vm_flags_clear(new_vma,VM_PAD_MASK);/new_vma->vm_flags \&= ~VM_PAD_MASK;/g' ./common/mm/mmap.c
         
         echo 'CFLAGS_susfs.o += -Wno-unused-function -Wno-unused-variable' >> ./common/fs/Makefile
-
-        grep -rn "ksu_install_su_fd" ./KernelSU/ 2>/dev/null | grep -v "\.h:" | head -5
         
     - name: fix_export_symbols
       working-directory: ${{ env.KERNEL }}
