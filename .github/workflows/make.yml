@@ -107,6 +107,9 @@ jobs:
         sed -i 's/vm_flags_clear(new_vma,VM_PAD_MASK);/new_vma->vm_flags \&= ~VM_PAD_MASK;/g' ./common/mm/mmap.c
         
         echo 'CFLAGS_susfs.o += -Wno-unused-function -Wno-unused-variable' >> ./common/fs/Makefile
+
+    - name: find_ksu_install_su_fd
+      run: grep -rn "^.*ksu_install_su_fd" $KERNEL/KernelSU/ $KERNEL/common/drivers/ 2>/dev/null || echo "NAO ENCONTRADO"
         
     - name: fix_export_symbols
       working-directory: ${{ env.KERNEL }}
@@ -117,8 +120,6 @@ jobs:
           "susfs_is_current_init_domain" \
           "ksu_install_su_fd" \
           >> ./common/drivers/kernelsu/selinux/selinux.c
-
-          grep -rn "^.*ksu_install_su_fd" ./KernelSU/ ./common/drivers/ 2>/dev/null || echo "NAO ENCONTRADO"
         
     - name: apply_config_fragment
       working-directory: ${{ env.KERNEL }}/common
