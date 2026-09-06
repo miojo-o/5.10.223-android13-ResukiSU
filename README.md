@@ -1,4 +1,4 @@
-# ReSukiSU GKI (2.0) Kernel — 5.10.223-android13
+# ReSukiSU GKI(2.0) Kernel — 5.10.223-android13
 
 ## Tested Device
 
